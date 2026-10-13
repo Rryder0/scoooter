@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣共享機車即時地圖</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+        #header {
+            background-color: #333;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+        }
+        #map {
+            width: 100vw;
+            height: calc(100vh - 60px);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <h1>共享機車即時資訊地圖</h1>
+    </div>
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 1. 初始化地圖，設定中心點（以台北車站為例）與縮放層級
+        const map = L.map('map').setView([25.0478, 121.5170], 14);
+
+        // 2. 載入 OpenStreetMap 圖磚
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // 建立一個圖層群組，方便之後管理 Marker
+        const markersLayer = L.layerGroup().addTo(map);
+
+        // 3. 模擬或串接共享機車 API 資料
+        // 這裡以政府開放資料或範例資料結構為例（實務上可替換為各家共享機車的即時 API 或政府開放資料 JSON 網址）
+        const fetchScooterData = async () => {
+            try {
+                // 範例：使用模擬的共享機車即時資料點（實際開發時請換成您的 API 網址，如 fetch('API_URL')）
+                const mockData = [
+                    { id: "Scooter-001", brand: "GoShare", lat: 25.0480, lng: 121.5180, battery: "85%", model: "Gogoro VIVA" },
+                    { id: "Scooter-002", brand: "iRent", lat: 25.0450, lng: 121.5150, battery: "92%", model: "iRent Motor" },
+                    { id: "Scooter-003", brand: "WeMo", lat: 25.0500, lng: 121.5200, battery: "60%", model: "WeMo Scooter" }
+                ];
+
+                // 清除舊圖層
+                markersLayer.clearLayers();
+
+                // 4. 將每筆資料以 Marker 標示在地圖上，並設定 Popup
+                mockData.forEach(item => {
+                    const marker = L.marker([item.lat, item.lng]);
+
+                    // 設定點擊後顯示的 Popup 內容
+                    const popupContent = `
+                        <strong>品牌：${item.brand}</strong><br>
+                        車輛編號：${item.id}<br>
+                        車型：${item.model}<br>
+                        電池電量：${item.battery}
+                    `;
+
+                    marker.bindPopup(popupContent);
+                    markersLayer.addLayer(marker);
+                });
+
+            } catch (error) {
+                console.error("無法取得共享機車資料：", error);
+            }
+        };
+
+        // 頁面載入時執行一次
+        fetchScooterData();
+
+        // （選擇性）每隔 60 秒自動更新一次資料
+        setInterval(fetchScooterData, 60000);
+    </script>
+</body>
+</html>
